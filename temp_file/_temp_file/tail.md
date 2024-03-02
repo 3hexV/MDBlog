@@ -1,0 +1,1 @@
+<center>Copyright ©2023 @Author@, All Rights Reserved.</center>

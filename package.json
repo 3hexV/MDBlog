@@ -1,0 +1,374 @@
+{
+  "name": "mdblog",
+  "displayName": "MDBlog",
+  "description": "A lightweight static blog system based on Markdown, supports exporting as a deployable static blog.",
+  "version": "1.0.1",
+  "publisher": "3hex",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "icon": "media/logo.png",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:._mdblog"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mdb_main_explorer",
+          "title": "MDBlog Explorer",
+          "icon": "./media/bar.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "mdb.open_file",
+        "title": "打开文件"
+      },
+      {
+        "command": "mdb.mv_cate_article",
+        "title": "移动"
+      },
+      {
+        "command": "mdb.rename_cate_article",
+        "title": "重命名"
+      },
+      {
+        "command": "mdb.edit_category",
+        "title": "编辑类别",
+        "icon": {
+          "light": "media/light/edit_cate.svg",
+          "dark": "media/dark/edit_cate.svg"
+        }
+      },
+      {
+        "command": "mdb.add_category",
+        "title": "添加类别",
+        "icon": {
+          "light": "media/light/add_cate.svg",
+          "dark": "media/dark/add_cate.svg"
+        }
+      },
+      {
+        "command": "mdb.add_top_category",
+        "title": "添加类别",
+        "icon": {
+          "light": "media/light/add_cate.svg",
+          "dark": "media/dark/add_cate.svg"
+        }
+      },
+      {
+        "command": "mdb.del_category",
+        "title": "删除类别"
+      },
+      {
+        "command": "mdb.get_cate_index_path",
+        "title": "复制地址"
+      },
+      {
+        "command": "mdb.add_article",
+        "title": "添加文章",
+        "icon": {
+          "light": "media/light/add_article.svg",
+          "dark": "media/dark/add_article.svg"
+        }
+      },
+      {
+        "command": "mdb.del_article",
+        "title": "删除文章"
+      },
+      {
+        "command": "mdb.init_mdb",
+        "title": "初始化New MDBlog"
+      },
+      {
+        "command": "mdb.open_mdb",
+        "title": "打开New MDBlog",
+        "icon": {
+          "light": "media/light/open_mdb_ws.svg",
+          "dark": "media/dark/open_mdb_ws.svg"
+        }
+      },
+      {
+        "command": "mdb.open_mdb_ws_dir",
+        "title": "打开MDBlog(资源浏览器)"
+      },
+      {
+        "command": "mdb.refresh",
+        "title": "刷新",
+        "icon": {
+          "light": "media/light/refresh.svg",
+          "dark": "media/dark/refresh.svg"
+        }
+      },
+      {
+        "//": "MDB 状态控制命令",
+        "command": "mdb.start_local",
+        "title": "启动"
+      },
+      {
+        "command": "mdb.stop_local",
+        "title": "停止"
+      },
+      {
+        "command": "mdb.md_publish_cur_win",
+        "title": "发布"
+      },
+      {
+        "command": "mdb.md_publish_all_saved_md",
+        "title": "更新发布"
+      },
+      {
+        "command": "mdb.md_publish_all_md",
+        "title": "全部发布"
+      },
+      {
+        "command": "mdb.open_publish_dir",
+        "title": "打开发布(资源浏览器)"
+      },
+      {
+        "command": "mdb.show_local",
+        "title": "查看(默认浏览器)",
+        "//": ""
+      },
+      {
+        "//": "MDB快捷指令",
+        "command": "mdb.msc_operate",
+        "title": "MDB快捷指令"
+      }
+    ],
+    "views": {
+      "mdb_main_explorer": [
+        {
+          "id": "mdb_pck_state",
+          "name": "MDB控制台"
+        },
+        {
+          "id": "mdb_pck_work",
+          "name": "文章管理"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "mdb_pck_work",
+        "contents": "MDBlog未打开。\n[打开MDBlog](command:mdb.open_mdb)\n[初始化MDBlog](command:mdb.init_mdb)"
+      },
+      {
+        "view": "mdb_pck_state",
+        "contents": "MDBlog未打开。"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "mdb.md_publish_cur_win",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "mdb.add_top_category",
+          "when": "view == mdb_pck_work",
+          "group": "navigation@1"
+        },
+        {
+          "command": "mdb.open_mdb",
+          "when": "view == mdb_pck_work",
+          "group": "navigation@2"
+        },
+        {
+          "command": "mdb.refresh",
+          "when": "view == mdb_pck_work",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "//": "类别的inline菜单",
+          "command": "mdb.edit_category",
+          "when": "view == mdb_pck_work && viewItem == category",
+          "group": "inline@3"
+        },
+        {
+          "command": "mdb.add_category",
+          "when": "view == mdb_pck_work && viewItem == category",
+          "group": "inline@1"
+        },
+        {
+          "command": "mdb.add_article",
+          "when": "view == mdb_pck_work && viewItem == category",
+          "group": "inline@2",
+          "//": ""
+        },
+        {
+          "//": "类别的右击菜单",
+          "command": "mdb.add_article",
+          "when": "view == mdb_pck_work && viewItem == category",
+          "group": "group_1@1"
+        },
+        {
+          "command": "mdb.get_cate_index_path",
+          "when": "view == mdb_pck_work && viewItem == category",
+          "group": "group_2@1"
+        },
+        {
+          "command": "mdb.del_category",
+          "when": "view == mdb_pck_work && viewItem == category",
+          "group": "group_3@3",
+          "//": ""
+        },
+        {
+          "//": "",
+          "command": "mdb.del_article",
+          "when": "view == mdb_pck_work && viewItem == article",
+          "group": "group_3@3"
+        },
+        {
+          "//": "共有的右击菜单",
+          "command": "mdb.mv_cate_article",
+          "when": "view == mdb_pck_work",
+          "group": "group_3@1"
+        },
+        {
+          "command": "mdb.rename_cate_article",
+          "when": "view == mdb_pck_work",
+          "group": "group_3@2",
+          "//": ""
+        },
+        {
+          "command": "mdb.open_mdb",
+          "group": "group_mdc_base_info@1",
+          "when": "view == mdb_pck_state && viewItem == base_info"
+        },
+        {
+          "command": "mdb.open_mdb_ws_dir",
+          "group": "group_mdc_base_info_op@1",
+          "when": "view == mdb_pck_state && viewItem == base_info"
+        },
+        {
+          "command": "mdb.init_mdb",
+          "group": "group_mdc_base_info_op@2",
+          "when": "view == mdb_pck_state && viewItem == base_info"
+        },
+        {
+          "//": "MDB控制台-本地运行的右击菜单",
+          "command": "mdb.start_local",
+          "when": "view == mdb_pck_state && viewItem == loc_run",
+          "group": "group_mdc_loc_run@1"
+        },
+        {
+          "command": "mdb.stop_local",
+          "when": "view == mdb_pck_state && viewItem == loc_run",
+          "group": "group_mdc_loc_run@2"
+        },
+        {
+          "command": "mdb.show_local",
+          "when": "view == mdb_pck_state && viewItem == loc_run",
+          "group": "group_mdc_loc_show@1",
+          "//": ""
+        },
+        {
+          "//": "MDB控制台-发布的右击菜单",
+          "command": "mdb.md_publish_cur_win",
+          "when": "view == mdb_pck_state && viewItem == publish",
+          "group": "group_mdc_publish@1"
+        },
+        {
+          "command": "mdb.md_publish_all_saved_md",
+          "when": "view == mdb_pck_state && viewItem == publish",
+          "group": "group_mdc_publish@2"
+        },
+        {
+          "command": "mdb.md_publish_all_md",
+          "when": "view == mdb_pck_state && viewItem == publish",
+          "group": "group_mdc_publish@3"
+        },
+        {
+          "command": "mdb.open_publish_dir",
+          "when": "view == mdb_pck_state && viewItem == publish",
+          "group": "group_mdc_publish_op@1",
+          "//": ""
+        },
+        {
+          "command": "mdb.open_mdb",
+          "when": "view == mdb_pck_state && viewItem == sync"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "mdb.open_mdb",
+        "key": "ctrl+m o",
+        "mac": "cmd+m o"
+      },
+      {
+        "command": "mdb.init_mdb",
+        "key": "ctrl+m i",
+        "mac": "cmd+m i"
+      },
+      {
+        "command": "mdb.start_local",
+        "key": "ctrl+m s",
+        "mac": "cmd+m s"
+      },
+      {
+        "command": "mdb.stop_local",
+        "key": "ctrl+m t",
+        "mac": "cmd+m t"
+      },
+      {
+        "command": "mdb.md_publish_cur_win",
+        "key": "ctrl+p c",
+        "mac": "cmd+p c"
+      },
+      {
+        "command": "mdb.md_publish_all_saved_md",
+        "key": "ctrl+p s",
+        "mac": "cmd+p s"
+      },
+      {
+        "command": "mdb.md_publish_all_md",
+        "key": "ctrl+p a",
+        "mac": "cmd+p a"
+      },
+      {
+        "command": "mdb.show_local",
+        "key": "ctrl+p o",
+        "mac": "cmd+p o"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.js --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.8",
+    "crossnote": "^0.9.7",
+    "esbuild": "^0.20.1",
+    "esbuild-plugin-copy": "^2.1.1",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "ini": "^4.1.1"
+  }
+}
