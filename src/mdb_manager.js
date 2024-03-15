@@ -641,7 +641,8 @@ class MDBManager {
 
                 // 网页图片URL的正则表达式
                 const web_pattern = /^http(s)?:\/\/.*\.(jpeg|jpg|gif|png)$/i;
-                $('p img').each(function() {
+
+                $('img').each(function() {
                     const img = $(this);
                     const src = img.attr('src');
                     img.addClass('zoom');
@@ -650,10 +651,9 @@ class MDBManager {
                         let imgFile = path.join(path.dirname(gen_html_path), src);
                         let imgData = fs.readFileSync(imgFile);
                         let base64Data ='data:image/jpeg;base64,' + imgData.toString('base64');
-                
+
                         img.attr('src', base64Data);
                     }
-                    
                 });
 
                 mdb_log.printDetails(`待发布目标文件HTML[后处理完成]`);
@@ -1368,7 +1368,7 @@ class MDBShortCmdController {
                     let img_name = img_path_handle.name;
                     // 当前MD的文件名
                     let cur_md_file_name = cur_md_file_handle.name;
-                    // // console.log("图片名: ", img_name, "当前编辑文件名: ", cur_md_file_name);
+                    // console.log("图片名: ", img_name, "当前编辑文件名: ", cur_md_file_name);
 
                     // 即将替换的md图片格式 字符串
                     let new_md_img_str = '';
@@ -1385,9 +1385,10 @@ class MDBShortCmdController {
                             // 图片名带后缀的
                             let img_name_with_suffix = img_path_handle.base;
                             let date_flag = new Date().getTime().toString();
+                            let random_flag = this.getRandomString(5);
                             // 新的图片md 文本
-                            let new_path = `./assets/${cur_md_file_name}_${date_flag}_${img_name_with_suffix}`;
-                            new_md_img_str = `![${cur_md_file_name}_${img_name}](${new_path})`;
+                            let new_path = `./assets/${date_flag}_${random_flag}_${img_name_with_suffix}`;
+                            new_md_img_str = `![${cur_md_file_name}_${random_flag}_${img_name}](${new_path})`;
 
                             // console.log("new md: ", new_md_img_str);
 
@@ -1435,6 +1436,16 @@ class MDBShortCmdController {
         )
     }
 
+    getRandomString(length) {
+        let result = '';
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+    
     mscImageOperate(type = '') {
         if (type == 'insert') {
             this.img_insert_flag = true;
