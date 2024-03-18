@@ -787,15 +787,22 @@ class MDBStructureController {
      */
     async renameCategoryOrArticle(old_path_str) {
         return new Promise((resolve) => {
+            let old_name = path.parse(old_path_str).name;
             vscode.window.showInputBox({
                 title: '重命名',
                 prompt: '输入新的名称',
                 ignoreFocusOut: true,
+                value: old_name
             }).then(async new_name => {
                 if (!new_name) {
-                    vscode.window.showErrorMessage('输入内容为空');
+                    // vscode.window.showErrorMessage('输入内容为空');
                     resolve([false]);
                 } else {
+                    // 没有更新名称
+                    if (old_name == new_name) {
+                        resolve([false]);
+                    }
+
                     let new_path_str = old_path_str.replace(
                         /\\[^\\]*$/,
                         old_path_str.includes('.md') ? `\\${new_name}.md` : `\\${new_name}`

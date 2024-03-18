@@ -2,7 +2,7 @@
   "name": "mdblog",
   "displayName": "MDBlog",
   "description": "A lightweight static blog system based on Markdown, supports exporting as a deployable static blog.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "3hex",
   "engines": {
     "vscode": "^1.85.0"
