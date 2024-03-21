@@ -371,19 +371,20 @@ class MDBManager {
      * @param {string} dst_path_str 
      */
     async mvCategoryAndArticle(dst_path_str) {
-        this.mdb_struct_ctrl.mvCategoryOrArticle(dst_path_str).then(
+        await this.mdb_struct_ctrl.mvCategoryOrArticle(dst_path_str).then(
             async (res) => {
-                if(!res[0]) return;
+                if(!res[0]) return;  
+    
                 this.mdb_view_ctrl.refreshMDBWorkExplorerView();
-                
+    
                 mdb_log.printDetails(`移动:${dst_path_str} -> ${res[1]}`);
-
+    
                 this.publish_queue.enqueue(res[1]); // old up cate
                 this.publish_queue.enqueue(res[2]); // new up cate
                 // this.publish_queue.enqueue(res[3]); // self
                 await this.dispatch();
             }
-        )
+        ); 
     }
 
     /**
@@ -614,7 +615,7 @@ class MDBManager {
      * @param {string} dst_md_file_path_str
      */
     async _publishMDFile(dst_md_file_path_str) {
-        mdb_log.printDetails(`待发布目标文件: ${dst_md_file_path_str}`);
+        mdb_log.printDetails(`--------------------------------\n待发布目标文件: ${dst_md_file_path_str}`);
 
         await this.mdb_struct_ctrl.mdToHTML(dst_md_file_path_str).then(
             async gen_html_path => {
@@ -640,14 +641,17 @@ class MDBManager {
                 const $ = cheerio.load(html);
 
                 // 网页图片URL的正则表达式
-                const web_pattern = /^http(s)?:\/\/.*\.(jpeg|jpg|gif|png)$/i;
+                const web_pattern = /^http(s)?:.*?$/i;
 
                 $('img').each(function() {
                     const img = $(this);
                     const src = img.attr('src');
                     img.addClass('zoom');
 
+                    mdb_log.printError(src+ '');
+
                     if (!web_pattern.test(src)) {
+
                         let imgFile = path.join(path.dirname(gen_html_path), src);
                         let imgData = fs.readFileSync(imgFile);
                         let base64Data ='data:image/jpeg;base64,' + imgData.toString('base64');
@@ -656,7 +660,7 @@ class MDBManager {
                     }
                 });
 
-                mdb_log.printDetails(`待发布目标文件HTML[后处理完成]`);
+                mdb_log.printDetails(`待发布目标文件HTML[后处理完成]\n--------------------------------`);
 
                 const updatedHTML = $.html();
                 fs.writeFileSync(gen_html_path, updatedHTML);
@@ -795,7 +799,7 @@ class MDBStructureController {
                 value: old_name
             }).then(async new_name => {
                 if (!new_name) {
-                    // vscode.window.showErrorMessage('输入内容为空');
+                    //vscode.window.showErrorMessage('输入内容为空');
                     resolve([false]);
                 } else {
                     // 没有更新名称
@@ -851,30 +855,83 @@ class MDBStructureController {
         })
     }
 
+        /**
+     * @description 获取指定路径下全部的文件夹
+     * @param {string} dst_path_str
+     * @param {string} pre_str
+     */
+        async getDirListByDstPath(pre_str, dst_path_str) {
+
+            if (!await this.mdb_file_proc_handler.isExist(dst_path_str)) {
+                return []
+            }
+
+            let directoryNames = null;
+            const uri = vscode.Uri.file(dst_path_str);
+            await vscode.workspace.fs.readDirectory(uri).then(files => {
+                directoryNames = files.filter(([name, type]) => type === vscode.FileType.Directory).map(([name]) => {
+                    if (name !== 'assets') {
+                        return pre_str + name;
+                    }
+                }).filter(item => item !== undefined);
+            });
+            return directoryNames;
+        }
+
     /**
      * @description 移动类别和文章
      * @param {string} old_path_str
      */
     async mvCategoryOrArticle(old_path_str) {
-        return new Promise((resolve) => {
-            vscode.window.showInputBox({
-                title: '移动',
-                prompt: '输入移动的目的位置',
-                ignoreFocusOut: true,
-            }).then(async new_index_path_str => {
+        return new Promise(async (resolve) => {
+            // 提取获取工作根目录下的类别
+            let raw_cate_list = await this.getDirListByDstPath('/', this.work_path);
+
+            // 初始显示为空
+            let quickPick = vscode.window.createQuickPick();
+            quickPick.items = [].map(label => ({ label }));
+
+            quickPick.onDidChangeValue(async value => {
+                // 判断是否最后一个字符为/，为/表示开始搜索已输入路径的子类别
+                if (value.slice(-1) === '/') {
+                    let dst_path = path.join(this.work_path, value);
+                    raw_cate_list = await this.getDirListByDstPath(value, dst_path);
+                    // console.log(raw_cate_list);
+                }
+                else if (value == '') {
+                    raw_cate_list = [];
+                }
+                quickPick.items = await raw_cate_list.filter(option => option.includes(value)).map(label => ({ label }));
+
+            });
+
+            quickPick.onDidAccept(async () => {
+                let selected = quickPick.selectedItems[0];
+                // console.log(`你选择了: ${selected.label}`);
+                quickPick.dispose();
+
+                let new_index_path_str = selected.label;
+                console.log(new_index_path_str)
                 if (!new_index_path_str) {
-                    vscode.window.showErrorMessage('输入内容为空');
+                    // vscode.window.showErrorMessage('输入内容为空');
                     resolve(false);
                     return;
                 } else {
-                    // 创建类别相关文件
                     let new_path_str = path.join(this.work_path, new_index_path_str, path.basename(old_path_str));
                     let idx_type = old_path_str.includes('.md')? "a" : "c";
-    
+
+                    console.log(old_path_str)
+                    console.log(new_path_str)
+
+                    // 移动是文章，需要将文章内的图片索引进行更新
+                    if (idx_type == 'a') {
+                        this.moveImgFileByIndex(old_path_str, new_path_str);
+                    }
+
                     mdb_log.printDetails(`move cate&article: ${new_path_str}`)
                     await this.mdb_file_proc_handler.move(old_path_str, new_path_str);
-               
 
+                    // 移动内public对应的文件
                     if (idx_type == "c") {
                         await this.mdb_file_proc_handler.move(
                             old_path_str.replace(this.work_dir, this.publish_dir),
@@ -893,7 +950,7 @@ class MDBStructureController {
     
                     // 创建索引
                     await this.createIndex(idx_type, new_path_str);
-
+                    
                     // 准备更新发布
                     resolve([
                         true, 
@@ -903,7 +960,37 @@ class MDBStructureController {
                     ]);
                 }
             });
+
+            quickPick.show();
         })
+    }
+
+    /**
+     * @param {string} old_path_str
+     * @param {string} new_path_str
+     */
+    moveImgFileByIndex(old_path_str, new_path_str) {
+        const markdownContent = fs.readFileSync(old_path_str, 'utf-8');
+
+        const imageRegexp = /!\[.*\]\((.*?)\)/g;
+
+        // 匹配所有的图片链接
+        let match;
+        const imagePaths = [];
+        while ((match = imageRegexp.exec(markdownContent)) !== null) {
+            imagePaths.push(match[1]);
+        }
+
+        // 将图片从旧的位置移动到新的位置
+        let old_dir = path.dirname(old_path_str);
+        let new_dir = path.dirname(new_path_str);
+        imagePaths.forEach(async (imagePath) => {
+            let img_name = path.basename(imagePath);
+            this.mdb_file_proc_handler.move(
+                path.join(old_dir, 'assets', img_name),
+                path.join(new_dir, 'assets', img_name)
+            );
+        });
     }
 
     /**
@@ -980,15 +1067,14 @@ class MDBStructureController {
                 ignoreFocusOut: true,
             }).then(async cate_name => {
                 if (!cate_name) {
-                    vscode.window.showErrorMessage('输入内容为空');
+                    // vscode.window.showErrorMessage('输入内容为空');
                     resolve([false, '']);
                 } else {
                     if (dst_path_str == null) {
                         dst_path_str = this.work_path;
                     }
-                    // 创建类别相关文件
                     let new_cate_path_str = path.join(dst_path_str, cate_name);
-                    // // console.log(new_cate_path_str);
+                    // console.log(new_cate_path_str);
                     
                     if (await this.mdb_file_proc_handler.isExist(
                         path.join(new_cate_path_str, 'index.md')
@@ -1041,7 +1127,7 @@ class MDBStructureController {
                 ignoreFocusOut: true,
             }).then(async article_name => {
                 if (!article_name) {
-                    vscode.window.showErrorMessage('输入内容为空');
+                    // vscode.window.showErrorMessage('输入内容为空');
                     resolve([false]);
                 } else {
                     if (dst_path_str == null) {
@@ -1129,7 +1215,7 @@ class MDBStructureController {
             register_old_cate = `- [${tmp_name}](./${tmp_name}${suffix})`+ os.EOL;
         }
         register_new_cate = `- [${tmp}](./${tmp}${suffix})` + os.EOL;
-        // // console.log(register_new_cate);
+        // console.log(register_new_cate);
 
         // 构建索引
         await this.mdb_file_proc_handler.updateFileWithFlag(
@@ -1504,10 +1590,22 @@ class MDBShortCmdController {
             case 'table': this.mscTableOperate(); break;
             case 'chart': this.mscChartOperate(cmd_type); break;
             case 'code': this.mscCCodeOperate(); break;
+            case 'date': this.mscDateOperate(); break;
         }
 
     }
 
+    async mscDateOperate() {
+        let snippet = this.getFormattedDate();
+        await this.writeCurLineText();
+        await this.cur_editor.insertSnippet(new vscode.SnippetString(snippet))
+    }
+
+    getFormattedDate() {
+        var d = new Date();
+        return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+    }
+    
     async mscCCodeOperate() {
         let cur_line_text = this.getCurFileCurLineText();
         await this.writeCurLineText();
@@ -1793,6 +1891,15 @@ class MDBShortCmdController {
     }
 
     getMSCList() {
+
+        // 时间插入
+        let msc_date = new vscode.CompletionItem('insert_date', vscode.CompletionItemKind.Operator);
+        msc_date.command = {
+            command: 'mdb.msc_operate', title: '', tooltip: '',
+            arguments: ['date', '']
+        };
+        msc_date.documentation = new vscode.MarkdownString('插入代码块');
+
         // 图片插入
         let msc_code_insert = new vscode.CompletionItem('insert_code_block', vscode.CompletionItemKind.Operator);
         msc_code_insert.command = {
@@ -1985,7 +2092,8 @@ class MDBShortCmdController {
             msc_table_insert,
             msc_img_insert,
             msc_img_delete,
-            msc_code_insert
+            msc_code_insert,
+            msc_date
         ]
     }
 

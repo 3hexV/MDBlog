@@ -2,7 +2,7 @@
   "name": "mdblog",
   "displayName": "MDBlog",
   "description": "A lightweight static blog system based on Markdown, supports exporting as a deployable static blog.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "3hex",
   "engines": {
     "vscode": "^1.85.0"
@@ -69,10 +69,6 @@
       {
         "command": "mdb.del_category",
         "title": "删除类别"
-      },
-      {
-        "command": "mdb.get_cate_index_path",
-        "title": "复制地址"
       },
       {
         "command": "mdb.add_article",
@@ -215,11 +211,6 @@
           "command": "mdb.add_article",
           "when": "view == mdb_pck_work && viewItem == category",
           "group": "group_1@1"
-        },
-        {
-          "command": "mdb.get_cate_index_path",
-          "when": "view == mdb_pck_work && viewItem == category",
-          "group": "group_2@1"
         },
         {
           "command": "mdb.del_category",

@@ -86,14 +86,14 @@ async function activate(context) {
 	);
 
 	// 复制 cate的相对地址 忽略_work_mdb，用于移动时提供目的地址
-	context.subscriptions.push(
-		vscode.commands.registerCommand('mdb.get_cate_index_path', async (uri) => {
-			let file_index = mdb_manager.getCategoryIndexPath(uri);
-			vscode.env.clipboard.writeText(file_index).then(() => {
-				vscode.window.showInformationMessage('复制地址成功');
-			});
-		})
-	);
+	// context.subscriptions.push(
+	// 	vscode.commands.registerCommand('mdb.get_cate_index_path', async (uri) => {
+	// 		let file_index = mdb_manager.getCategoryIndexPath(uri);
+	// 		vscode.env.clipboard.writeText(file_index).then(() => {
+	// 			vscode.window.showInformationMessage('复制地址成功');
+	// 		});
+	// 	})
+	// );
 
 	// 编辑类别文件（固定模式）
 	context.subscriptions.push(

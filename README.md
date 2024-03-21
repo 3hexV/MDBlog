@@ -44,11 +44,10 @@
 ![alt text](./readme_res/image-4.png)
 
 - 移动分类
+    - 需要移动的分类，右击菜单选择移动
+    ![alt text](./readme_res/image-5.png)   
 
-    - 复制目标分类的地址
-    ![alt text](./readme_res/image-5.png)
-
-    - 移动 -> 粘贴目标分类地址
+    - 根据提示输入需要移动到的位置，回车确认移动
     ![alt text](./readme_res/image-6.png)
 
 ### 3.3 新建、编辑、删除文章
@@ -122,6 +121,8 @@ MDBlog支持快捷命令，输入`mc.`即弹出提示框。
             ]
         }
         ```
+- 插入当前时间
+    1. 新行输入`mc.insert_date`，即可自动获得当前时间，格式为`yyyy-MM-dd HH:mm:ss`
 
 ## 4. Keybindings
 
@@ -137,6 +138,8 @@ MDBlog支持快捷命令，输入`mc.`即弹出提示框。
 | 本地预览-停止        | `ctrl+m t` |
 
 ## 5. Release Notes
+
+更多信息请查看[CHANGELOG](./CHANGELOG.md)
 
 ### 1.0.1 (24.03.02)
 

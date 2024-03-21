@@ -8,8 +8,10 @@ class MDBLog {
         this.out_text = ''
         this.publish_with_log_output = publish_with_log_output;
 
-        if(this.publish_with_log_output) {
-            this.output_channel = vscode.window.createOutputChannel("MDB Log");
+        if(!this.not_show_flag) {
+            if(this.publish_with_log_output) {
+                this.output_channel = vscode.window.createOutputChannel("MDB Log");
+            }
         }
     }
 
